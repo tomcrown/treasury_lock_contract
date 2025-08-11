@@ -186,7 +186,8 @@ export default function App() {
         return;
       }
 
-      alert("Withdraw successful!");
+      alert("Withdraw successful!")
+      setLockerId("");
     } catch (error: any) {
       console.error("Withdraw failed:", error);
       const serialized = error?.toString() || "";
@@ -230,7 +231,8 @@ export default function App() {
         return;
       }
 
-      alert("Withdraw successful!");
+      alert("Withdraw successful!")
+      setLockerId("");
     } catch (error: any) {
       console.error("Withdraw failed:", error);
       const serialized = error?.toString() || "";
@@ -271,7 +273,7 @@ export default function App() {
   }
 
   return (
-    <div className="mt-20 bg-gradient-to-r from-black via-gray-900 to-black text-white p-6 max-w-xl mx-auto rounded shadow-xl">
+    <div className="mt-20 bg-gradient-to-r from-black via-gray-900 to-black text-white p-6 max-w-3xl mx-auto rounded shadow-xl">
       <h1 className="text-2xl font-bold mb-6 text-center">Treasury Lock</h1>
 
       <div className="mb-4">
@@ -365,8 +367,9 @@ export default function App() {
 
             <button
               onClick={withdrawLoan}
-              disabled={lockerId.trim() === ""}
-              className={`mt-4 ${lockerId.trim() === ""
+              // Enabled only if lockerId exists AND coinType is empty (SUI lending)
+              disabled={lockerId.trim() === "" || coinType.trim() !== ""}
+              className={`mt-4 ${lockerId.trim() === "" || coinType.trim() !== ""
                 ? "bg-gray-500 cursor-not-allowed"
                 : "bg-purple-600 hover:bg-purple-700"
                 } text-white px-4 py-2 rounded w-full`}
@@ -376,8 +379,9 @@ export default function App() {
 
             <button
               onClick={withdrawCustomLoan}
-              disabled={lockerId.trim() === "" || !coinType}
-              className={`mt-4 ${lockerId.trim() === "" || !coinType
+              // Enabled only if lockerId exists AND coinType is set (custom coin lending)
+              disabled={lockerId.trim() === "" || coinType.trim() === ""}
+              className={`mt-4 ${lockerId.trim() === "" || coinType.trim() === ""
                 ? "bg-gray-500 cursor-not-allowed"
                 : "bg-red-600 hover:bg-red-700"
                 } text-white px-4 py-2 rounded w-full`}
