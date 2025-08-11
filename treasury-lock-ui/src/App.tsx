@@ -27,7 +27,14 @@ export default function App() {
   const amount = parseFloat(amountInput);
   const isLendDisabled = !currentAccount || !amount || amount <= 0;
 
-  // Sends a transaction to lock (lend) tokens using the Move function
+  // ---- New state for custom coin ----
+  const [coinType, setCoinType] = useState("");
+  const [customAmountInput, setCustomAmountInput] = useState("");
+  const [customDuration, setCustomDuration] = useState(5);
+  const customAmount = parseFloat(customAmountInput);
+  const isCustomLendDisabled = !currentAccount || !coinType || !customAmount || customAmount <= 0;
+
+  // Sends a transaction to lock (lend) SUI tokens
   async function lend() {
     if (!currentAccount || !amount || duration <= 0) {
       alert("Amount or duration must be greater than zero.");
@@ -55,17 +62,13 @@ export default function App() {
 
       console.log("Lend result:", result);
 
-      // Get the digest from the result
       const digest = result?.digest || result?.effects?.transactionDigest;
-
-      // Fetch the full transaction block with object changes
       const txBlock = await client.getTransactionBlock({
         digest,
         options: { showObjectChanges: true },
       }) as any;
 
       const createdObjects = txBlock.objectChanges?.filter((c: any) => c.type === "created");
-      console.log("Created objects:", createdObjects);
       const lockerObj = createdObjects?.find((c: any) =>
         c.objectType.includes("Locker<0x2::sui::SUI>")
       );
@@ -85,8 +88,74 @@ export default function App() {
     }
   }
 
+  // Sends a transaction to lock (lend) custom coin tokens
+  async function lendCustomCoin() {
+    if (!currentAccount || !customAmount || customDuration <= 0 || !coinType) {
+      alert("Coin type, amount, and duration are required.");
+      return;
+    }
 
-  // Sends a transaction to withdraw a locked loan if eligible
+    try {
+      const coins = await client.getCoins({
+        owner: currentAccount.address,
+        coinType,
+      });
+
+      if (!coins.data.length) {
+        alert(`No coins of type ${coinType} found in your wallet.`);
+        return;
+      }
+
+      const coinObj = coins.data.find(c => BigInt(c.balance) >= BigInt(customAmount * 1_000_000_000));
+      if (!coinObj) {
+        alert(`No single coin object has enough balance for ${customAmount} units.`);
+        return;
+      }
+
+      const tx = new Transaction();
+      tx.setGasBudget(100000000);
+
+      const [splitCoin] = tx.splitCoins(
+        tx.object(coinObj.coinObjectId),
+        [tx.pure.u64(BigInt(customAmount * 1_000_000_000))]
+      );
+
+      tx.moveCall({
+        target: `${PACKAGE_ID}::${MODULE_NAME}::lend`,
+        typeArguments: [coinType],
+        arguments: [splitCoin, tx.pure.u64(customDuration), tx.object(CLOCK_OBJECT_ID)],
+      });
+
+      const result = await signAndExecuteTransaction({ transaction: tx }) as any;
+      console.log("Custom lend result:", result);
+
+      const digest = result?.digest || result?.effects?.transactionDigest;
+      const txBlock = await client.getTransactionBlock({
+        digest,
+        options: { showObjectChanges: true },
+      }) as any;
+
+      const createdObjects = txBlock.objectChanges?.filter((c: any) => c.type === "created");
+      const lockerObj = createdObjects?.find((c: any) =>
+        c.objectType.includes(`Locker<${coinType}>`)
+      );
+
+      if (lockerObj) {
+        setLockerId(lockerObj.objectId);
+        alert(`Custom coin lend successful! Locker ID: ${lockerObj.objectId}`);
+      } else {
+        alert("Lend successful, but no Locker object was found.");
+      }
+
+      setCustomAmountInput("");
+      setCustomDuration(5);
+    } catch (error) {
+      console.error("Custom lend failed:", error);
+      alert("Custom lend failed.");
+    }
+  }
+
+  // Withdraw a locked loan (SUI only)
   async function withdrawLoan() {
     if (!lockerId || !currentAccount) {
       alert("Locker ID or wallet not connected.");
@@ -109,22 +178,17 @@ export default function App() {
 
       if (status === "failure") {
         console.error("Withdraw failed:", errorMessage);
-
-        // Show specific error if withdrawal is attempted too early
         if (errorMessage?.toLowerCase().includes("code 2")) {
           alert("Error: It’s too early to withdraw. Please wait until the lock duration ends.");
         } else {
           alert(`Withdraw failed: ${errorMessage}`);
         }
-
         return;
       }
 
       alert("Withdraw successful!");
     } catch (error: any) {
       console.error("Withdraw failed:", error);
-
-      // Handle "too early" withdraw errors from failed transaction
       const serialized = error?.toString() || "";
       if (serialized.includes("code 2")) {
         alert("Error: It’s too early to withdraw. Please wait until the lock duration ends.");
@@ -135,7 +199,50 @@ export default function App() {
   }
 
 
-  // Fetches Locker object data from chain and parses key fields
+  // Withdraw a locked loan (Custom type)
+  async function withdrawCustomLoan() {
+    if (!lockerId || !currentAccount) {
+      alert("Locker ID or wallet not connected.");
+      return;
+    }
+
+    try {
+      const tx = new Transaction();
+      tx.moveCall({
+        target: `${PACKAGE_ID}::${MODULE_NAME}::withdraw_loan`,
+        typeArguments: [coinType],
+        arguments: [tx.object(lockerId), tx.object(CLOCK_OBJECT_ID)],
+      });
+
+      const result = await signAndExecuteTransaction({ transaction: tx }) as any;
+      console.log("Withdraw result:", result);
+
+      const status = result?.effects?.status?.status;
+      const errorMessage = result?.effects?.status?.error;
+
+      if (status === "failure") {
+        console.error("Withdraw failed:", errorMessage);
+        if (errorMessage?.toLowerCase().includes("code 2")) {
+          alert("Error: It’s too early to withdraw. Please wait until the lock duration ends.");
+        } else {
+          alert(`Withdraw failed: ${errorMessage}`);
+        }
+        return;
+      }
+
+      alert("Withdraw successful!");
+    } catch (error: any) {
+      console.error("Withdraw failed:", error);
+      const serialized = error?.toString() || "";
+      if (serialized.includes("code 2")) {
+        alert("Error: It’s too early to withdraw. Please wait until the lock duration ends.");
+      } else {
+        alert("Withdraw failed.");
+      }
+    }
+  }
+
+  // Fetch locker info
   async function getLockerInfo() {
     if (!lockerId) return;
 
@@ -147,7 +254,6 @@ export default function App() {
 
       if (res.data?.content?.dataType === "moveObject") {
         const fields = (res.data.content as any).fields;
-
         setInfo([
           fields.lender,
           fields.balance,
@@ -160,7 +266,7 @@ export default function App() {
       }
     } catch (e) {
       console.error("Failed to fetch locker info:", e);
-      alert("Failed to fetch locker info. Make sure the ID is valid and you are on the correct network.");
+      alert("Failed to fetch locker info.");
     }
   }
 
@@ -175,6 +281,7 @@ export default function App() {
 
       {currentAccount && (
         <>
+          {/* SUI lending section */}
           <div className="mb-6">
             <label className="block mb-1 font-medium">Amount (SUI):</label>
             <input
@@ -203,6 +310,49 @@ export default function App() {
             </button>
           </div>
 
+          {/* Custom coin lending section */}
+          <div className="mb-6 mt-10 border-t border-gray-700 pt-6">
+            <h2 className="text-lg font-semibold mb-4">Lend Custom Coin</h2>
+
+            <label className="block mb-1 font-medium">Coin Type:</label>
+            <input
+              type="text"
+              value={coinType}
+              onChange={(e) => setCoinType(e.target.value)}
+              className="border border-gray-600 bg-gray-800 text-white rounded p-2 w-full"
+              placeholder="e.g. 0xYourPackage::yourcoin::YOURCOIN"
+            />
+
+            <label className="block mt-4 mb-1 font-medium">Amount:</label>
+            <input
+              type="text"
+              value={customAmountInput}
+              onChange={(e) => setCustomAmountInput(e.target.value)}
+              className="border border-gray-600 bg-gray-800 text-white rounded p-2 w-full"
+              placeholder="e.g. 50"
+            />
+
+            <label className="block mt-4 mb-1 font-medium">Duration (minutes):</label>
+            <input
+              type="number"
+              value={customDuration}
+              onChange={(e) => setCustomDuration(parseInt(e.target.value))}
+              className="border border-gray-600 bg-gray-800 text-white rounded p-2 w-full"
+            />
+
+            <button
+              onClick={lendCustomCoin}
+              disabled={isCustomLendDisabled}
+              className={`mt-4 ${isCustomLendDisabled
+                ? "bg-gray-500 cursor-not-allowed"
+                : "bg-yellow-600 hover:bg-yellow-700"
+                } text-white px-4 py-2 rounded w-full`}
+            >
+              Lend Custom Coin
+            </button>
+          </div>
+
+          {/* Locker actions */}
           <div className="mb-6">
             <label className="block mb-1 font-medium">Locker Object ID:</label>
             <input
@@ -225,6 +375,18 @@ export default function App() {
             </button>
 
             <button
+              onClick={withdrawCustomLoan}
+              disabled={lockerId.trim() === "" || !coinType}
+              className={`mt-4 ${lockerId.trim() === "" || !coinType
+                ? "bg-gray-500 cursor-not-allowed"
+                : "bg-red-600 hover:bg-red-700"
+                } text-white px-4 py-2 rounded w-full`}
+            >
+              Withdraw Custom Loan
+            </button>
+
+
+            <button
               onClick={getLockerInfo}
               disabled={lockerId.trim() === ""}
               className={`mt-2 ${lockerId.trim() === ""
@@ -236,6 +398,7 @@ export default function App() {
             </button>
           </div>
 
+          {/* Locker info display */}
           <div className="mb-6">
             {info && (
               <>
@@ -250,7 +413,6 @@ export default function App() {
                   <p><strong>Status:</strong> <span className={new Date() >= new Date(Number(info[2]) + Number(info[3])) ? "text-green-400" : "text-yellow-400"}>
                     {new Date() >= new Date(Number(info[2]) + Number(info[3])) ? "Ready to withdraw" : "Not ready yet"}
                   </span></p>
-
                 </div>
               </>
             )}
