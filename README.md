@@ -1,6 +1,6 @@
 ---
 
-# 🔐 Sui Loan Locker – Time-Locked Lending with UI
+# 🔐 Treasury Locker – Time-Locked Lending with UI
 
 A **Sui Move smart contract** and **React frontend** that lets users lock SUI tokens for a fixed time period and withdraw them only after the duration ends.
 Includes a connected UI for lending, withdrawing, and viewing locker details.

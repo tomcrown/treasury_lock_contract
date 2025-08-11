@@ -166,7 +166,7 @@ export default function App() {
 
   return (
     <div className="mt-20 bg-gradient-to-r from-black via-gray-900 to-black text-white p-6 max-w-xl mx-auto rounded shadow-xl">
-      <h1 className="text-2xl font-bold mb-6 text-center">Sui Loan Locker</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center">Treasury Locker</h1>
 
       <div className="mb-4">
         <ConnectButton />
@@ -244,7 +244,13 @@ export default function App() {
                   <p><strong>Lender:</strong> {info[0]}</p>
                   <p><strong>Amount (mist):</strong> {info[1]}</p>
                   <p><strong>Start Time:</strong> {info[2]}</p>
+                  <p><strong>Start Date:</strong> {new Date(Number(info[2])).toLocaleString()}</p>
                   <p><strong>Duration:</strong> {info[3]}</p>
+                  <p><strong>Estimated Release:</strong> {new Date(Number(info[2]) + Number(info[3])).toLocaleString()}</p>
+                  <p><strong>Status:</strong> <span className={new Date() >= new Date(Number(info[2]) + Number(info[3])) ? "text-green-400" : "text-yellow-400"}>
+                    {new Date() >= new Date(Number(info[2]) + Number(info[3])) ? "Ready to withdraw" : "Not ready yet"}
+                  </span></p>
+                  
                 </div>
               </>
             )}
