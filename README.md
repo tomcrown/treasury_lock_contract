@@ -2,7 +2,7 @@
 
 # 🔐 Treasury Locker – Time-Locked Lending with UI
 
-A **Sui Move smart contract** and **React frontend** that lets users lock SUI tokens for a fixed time period and withdraw them only after the duration ends.
+A **Sui Move smart contract** and **React frontend** that lets users lock SUI or any custom tokens for a fixed time period and withdraw them only after the duration ends.
 Includes a connected UI for lending, withdrawing, and viewing locker details.
 
 ---
@@ -11,7 +11,7 @@ Includes a connected UI for lending, withdrawing, and viewing locker details.
 
 ## **[🚀 Launch App](https://lock-contract.vercel.app/)**
 
-*Connect your wallet, lock SUI, and test withdrawals directly on Sui Testnet.*
+*Connect your wallet, lock coin, and test withdrawals directly on Sui Testnet.*
 
 ![Alt Text](Screenshot.png)
 
@@ -33,7 +33,7 @@ Includes a connected UI for lending, withdrawing, and viewing locker details.
 ### **Frontend (React + Sui dApp Kit)**
 
 * Wallet connection via `ConnectButton`
-* Lock SUI tokens with custom amount & duration
+* Lock any coin tokens with custom amount & duration
 * Withdraw when eligible
 * Fetch locker details from the blockchain
 * Error handling for early withdrawals & invalid inputs
@@ -73,7 +73,7 @@ The React UI interacts with the on-chain contract using:
 
 **UI Features:**
 
-* **Lend SUI**: Specify amount & duration (in minutes)
+* **Lend**: Specify amount & duration (in minutes)
 * **Withdraw Loan**: After duration has passed
 * **Get Locker Info**: Fetch on-chain locker details (lender, amount, start time, duration)
 
@@ -84,7 +84,7 @@ The React UI interacts with the on-chain contract using:
 ### **1. Clone Repo**
 
 ```bash
-git clone https://github.com/tomcrown/lock-contract.move.git
+git clone https://github.com/notus-labs/treasury_lock_contract.git
 cd lock_contract
 ```
 
@@ -99,7 +99,7 @@ sui move test
 ### **3. Frontend**
 
 ```bash
-cd sui-locker-ui
+cd treasury-lock-ui
 pnpm install
 pnpm dev
 ```
@@ -108,12 +108,12 @@ pnpm dev
 
 ## 📜 Example UI Usage
 
-### **Lock SUI**
+### **Lock SUI/Custom coin**
 
 1. Connect wallet
-2. Enter amount in SUI
+2. Enter amount
 3. Enter duration in minutes
-4. Click **"Lend SUI"**
+4. Click **"Lend"**
 5. Locker ID will be displayed after transaction confirmation
 
 ### **Withdraw Loan**
