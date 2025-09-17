@@ -507,9 +507,6 @@ export default function App() {
             {info && (
               <div className="mt-8 bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
                 <div className="flex items-center mb-6">
-                  <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full flex items-center justify-center mr-3">
-                    <span className="text-white font-bold text-sm">ℹ️</span>
-                  </div>
                   <h2 className="text-2xl font-bold text-white">
                     Locker Information
                   </h2>
