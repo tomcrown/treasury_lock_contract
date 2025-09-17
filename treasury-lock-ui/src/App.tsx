@@ -330,258 +330,272 @@ export default function App() {
           </div>
         </div>
 
-        {currentAccount && (
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* SUI Lending Section */}
-            <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
-              <div className="flex items-center mb-6">
-                <h2 className="text-2xl font-bold text-white">Lock SUI</h2>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Amount (SUI)
-                  </label>
-                  <input
-                    type="text"
-                    value={amountInput}
-                    onChange={(e) => setAmountInput(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="e.g. 1.5"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Duration (minutes)
-                  </label>
-                  <input
-                    type="number"
-                    value={duration}
-                    onChange={(e) => setDuration(parseInt(e.target.value))}
-                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  />
-                </div>
-
-                <button
-                  onClick={lend}
-                  disabled={isLendDisabled}
-                  className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-200 ${
-                    isLendDisabled
-                      ? "bg-slate-600 text-slate-400 cursor-not-allowed"
-                      : "bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 transform hover:scale-[1.02] shadow-lg"
-                  }`}
-                >
-                  Lock SUI Tokens
-                </button>
-              </div>
+        {/* Main Content - Always Visible */}
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* SUI Lending Section */}
+          <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
+            <div className="flex items-center mb-6">
+              <h2 className="text-2xl font-bold text-white">Lock SUI</h2>
             </div>
 
-            {/* Custom Coin Lending Section */}
-            <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
-              <div className="flex items-center mb-6">
-                <h2 className="text-2xl font-bold text-white">
-                  Lock Custom Coin
-                </h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Amount (SUI)
+                </label>
+                <input
+                  type="text"
+                  value={amountInput}
+                  onChange={(e) => setAmountInput(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="e.g. 1.5"
+                  disabled={!currentAccount}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Duration (minutes)
+                </label>
+                <input
+                  type="number"
+                  value={duration}
+                  onChange={(e) => setDuration(parseInt(e.target.value))}
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  disabled={!currentAccount}
+                />
+              </div>
+
+              <button
+                onClick={lend}
+                disabled={isLendDisabled}
+                className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-200 ${
+                  isLendDisabled
+                    ? "bg-slate-600 text-slate-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 transform hover:scale-[1.02] shadow-lg"
+                }`}
+              >
+                {!currentAccount
+                  ? "Connect Wallet to Lock SUI"
+                  : "Lock SUI Tokens"}
+              </button>
+            </div>
+          </div>
+
+          {/* Custom Coin Lending Section */}
+          <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
+            <div className="flex items-center mb-6">
+              <h2 className="text-2xl font-bold text-white">
+                Lock Custom Coin
+              </h2>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Coin Type
+                </label>
+                <input
+                  type="text"
+                  value={coinType}
+                  onChange={(e) => setCoinType(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                  placeholder="0xYourPackage::yourcoin::YOURCOIN"
+                  disabled={!currentAccount}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Amount
+                </label>
+                <input
+                  type="text"
+                  value={customAmountInput}
+                  onChange={(e) => setCustomAmountInput(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                  placeholder="e.g. 50"
+                  disabled={!currentAccount}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Duration (minutes)
+                </label>
+                <input
+                  type="number"
+                  value={customDuration}
+                  onChange={(e) => setCustomDuration(parseInt(e.target.value))}
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                  disabled={!currentAccount}
+                />
+              </div>
+
+              <button
+                onClick={lendCustomCoin}
+                disabled={isCustomLendDisabled}
+                className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-200 ${
+                  isCustomLendDisabled
+                    ? "bg-slate-600 text-slate-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700 transform hover:scale-[1.02] shadow-lg"
+                }`}
+              >
+                {!currentAccount
+                  ? "Connect Wallet to Lock Custom"
+                  : "Lock Custom Tokens"}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Locker Management Section - Always Visible */}
+        <div className="mt-8 bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
+          <div className="flex items-center mb-6">
+            <h2 className="text-2xl font-bold text-white">Manage Locker</h2>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Locker Object ID
+              </label>
+              <input
+                type="text"
+                value={lockerId}
+                onChange={(e) => setLockerId(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                placeholder="Enter Locker Object ID"
+                disabled={!currentAccount}
+              />
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <button
+                onClick={withdrawLoan}
+                disabled={
+                  lockerId.trim() === "" ||
+                  coinType.trim() !== "" ||
+                  !currentAccount
+                }
+                className={`py-3 px-6 rounded-xl font-semibold transition-all duration-200 ${
+                  lockerId.trim() === "" ||
+                  coinType.trim() !== "" ||
+                  !currentAccount
+                    ? "bg-slate-600 text-slate-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-purple-600 to-violet-600 text-white hover:from-purple-700 hover:to-violet-700 transform hover:scale-[1.02] shadow-lg"
+                }`}
+              >
+                Withdraw SUI
+              </button>
+
+              <button
+                onClick={withdrawCustomLoan}
+                disabled={
+                  lockerId.trim() === "" ||
+                  coinType.trim() === "" ||
+                  !currentAccount
+                }
+                className={`py-3 px-6 rounded-xl font-semibold transition-all duration-200 ${
+                  lockerId.trim() === "" ||
+                  coinType.trim() === "" ||
+                  !currentAccount
+                    ? "bg-slate-600 text-slate-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700 transform hover:scale-[1.02] shadow-lg"
+                }`}
+              >
+                Withdraw Custom
+              </button>
+
+              <button
+                onClick={getLockerInfo}
+                disabled={lockerId.trim() === ""}
+                className={`py-3 px-6 rounded-xl font-semibold transition-all duration-200 ${
+                  lockerId.trim() === ""
+                    ? "bg-slate-600 text-slate-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 transform hover:scale-[1.02] shadow-lg"
+                }`}
+              >
+                Get Info
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Locker Info Display - Always Visible when info exists */}
+        {info && (
+          <div className="mt-8 bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
+            <div className="flex items-center mb-6">
+              <h2 className="text-2xl font-bold text-white">
+                Locker Information
+              </h2>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="bg-slate-700/30 rounded-xl p-4">
+                  <label className="block text-sm font-medium text-slate-400 mb-1">
+                    Locker Address
+                  </label>
+                  <p className="text-white font-mono text-sm break-all">
+                    {info[0]}
+                  </p>
+                </div>
+                <div className="bg-slate-700/30 rounded-xl p-4">
+                  <label className="block text-sm font-medium text-slate-400 mb-1">
+                    Amount (mist)
+                  </label>
+                  <p className="text-white font-mono">{info[1]}</p>
+                </div>
+                <div className="bg-slate-700/30 rounded-xl p-4">
+                  <label className="block text-sm font-medium text-slate-400 mb-1">
+                    Duration
+                  </label>
+                  <p className="text-white">{info[3]} ms</p>
+                </div>
               </div>
 
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Coin Type
+                <div className="bg-slate-700/30 rounded-xl p-4">
+                  <label className="block text-sm font-medium text-slate-400 mb-1">
+                    Start Time
                   </label>
-                  <input
-                    type="text"
-                    value={coinType}
-                    onChange={(e) => setCoinType(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
-                    placeholder="0xYourPackage::yourcoin::YOURCOIN"
-                  />
+                  <p className="text-white">
+                    {new Date(Number(info[2])).toLocaleString()}
+                  </p>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Amount
+                <div className="bg-slate-700/30 rounded-xl p-4">
+                  <label className="block text-sm font-medium text-slate-400 mb-1">
+                    Estimated Release
                   </label>
-                  <input
-                    type="text"
-                    value={customAmountInput}
-                    onChange={(e) => setCustomAmountInput(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
-                    placeholder="e.g. 50"
-                  />
+                  <p className="text-white">
+                    {new Date(
+                      Number(info[2]) + Number(info[3])
+                    ).toLocaleString()}
+                  </p>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Duration (minutes)
+                <div className="bg-slate-700/30 rounded-xl p-4">
+                  <label className="block text-sm font-medium text-slate-400 mb-1">
+                    Status
                   </label>
-                  <input
-                    type="number"
-                    value={customDuration}
-                    onChange={(e) =>
-                      setCustomDuration(parseInt(e.target.value))
-                    }
-                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
-                  />
+                  <div className="flex items-center">
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                        new Date() >=
+                        new Date(Number(info[2]) + Number(info[3]))
+                          ? "bg-green-500/20 text-green-400"
+                          : "bg-amber-500/20 text-amber-400"
+                      }`}
+                    >
+                      {new Date() >= new Date(Number(info[2]) + Number(info[3]))
+                        ? "✅ Ready to withdraw"
+                        : "⏳ Locked"}
+                    </span>
+                  </div>
                 </div>
-
-                <button
-                  onClick={lendCustomCoin}
-                  disabled={isCustomLendDisabled}
-                  className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-200 ${
-                    isCustomLendDisabled
-                      ? "bg-slate-600 text-slate-400 cursor-not-allowed"
-                      : "bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700 transform hover:scale-[1.02] shadow-lg"
-                  }`}
-                >
-                  Lock Custom Tokens
-                </button>
               </div>
             </div>
           </div>
-        )}
-
-        {currentAccount && (
-          <>
-            {/* Locker Management Section */}
-            <div className="mt-8 bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
-              <div className="flex items-center mb-6">
-                <h2 className="text-2xl font-bold text-white">Manage Locker</h2>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Locker Object ID
-                  </label>
-                  <input
-                    type="text"
-                    value={lockerId}
-                    onChange={(e) => setLockerId(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                    placeholder="Enter Locker Object ID"
-                  />
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-4">
-                  <button
-                    onClick={withdrawLoan}
-                    disabled={lockerId.trim() === "" || coinType.trim() !== ""}
-                    className={`py-3 px-6 rounded-xl font-semibold transition-all duration-200 ${
-                      lockerId.trim() === "" || coinType.trim() !== ""
-                        ? "bg-slate-600 text-slate-400 cursor-not-allowed"
-                        : "bg-gradient-to-r from-purple-600 to-violet-600 text-white hover:from-purple-700 hover:to-violet-700 transform hover:scale-[1.02] shadow-lg"
-                    }`}
-                  >
-                    Withdraw SUI
-                  </button>
-
-                  <button
-                    onClick={withdrawCustomLoan}
-                    disabled={lockerId.trim() === "" || coinType.trim() === ""}
-                    className={`py-3 px-6 rounded-xl font-semibold transition-all duration-200 ${
-                      lockerId.trim() === "" || coinType.trim() === ""
-                        ? "bg-slate-600 text-slate-400 cursor-not-allowed"
-                        : "bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700 transform hover:scale-[1.02] shadow-lg"
-                    }`}
-                  >
-                    Withdraw Custom
-                  </button>
-
-                  <button
-                    onClick={getLockerInfo}
-                    disabled={lockerId.trim() === ""}
-                    className={`py-3 px-6 rounded-xl font-semibold transition-all duration-200 ${
-                      lockerId.trim() === ""
-                        ? "bg-slate-600 text-slate-400 cursor-not-allowed"
-                        : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 transform hover:scale-[1.02] shadow-lg"
-                    }`}
-                  >
-                    Get Info
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Locker Info Display */}
-            {info && (
-              <div className="mt-8 bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
-                <div className="flex items-center mb-6">
-                  <h2 className="text-2xl font-bold text-white">
-                    Locker Information
-                  </h2>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div className="bg-slate-700/30 rounded-xl p-4">
-                      <label className="block text-sm font-medium text-slate-400 mb-1">
-                        Lender Address
-                      </label>
-                      <p className="text-white font-mono text-sm break-all">
-                        {info[0]}
-                      </p>
-                    </div>
-                    <div className="bg-slate-700/30 rounded-xl p-4">
-                      <label className="block text-sm font-medium text-slate-400 mb-1">
-                        Amount (mist)
-                      </label>
-                      <p className="text-white font-mono">{info[1]}</p>
-                    </div>
-                    <div className="bg-slate-700/30 rounded-xl p-4">
-                      <label className="block text-sm font-medium text-slate-400 mb-1">
-                        Duration
-                      </label>
-                      <p className="text-white">{info[3]} ms</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="bg-slate-700/30 rounded-xl p-4">
-                      <label className="block text-sm font-medium text-slate-400 mb-1">
-                        Start Time
-                      </label>
-                      <p className="text-white">
-                        {new Date(Number(info[2])).toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="bg-slate-700/30 rounded-xl p-4">
-                      <label className="block text-sm font-medium text-slate-400 mb-1">
-                        Estimated Release
-                      </label>
-                      <p className="text-white">
-                        {new Date(
-                          Number(info[2]) + Number(info[3])
-                        ).toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="bg-slate-700/30 rounded-xl p-4">
-                      <label className="block text-sm font-medium text-slate-400 mb-1">
-                        Status
-                      </label>
-                      <div className="flex items-center">
-                        <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                            new Date() >=
-                            new Date(Number(info[2]) + Number(info[3]))
-                              ? "bg-green-500/20 text-green-400"
-                              : "bg-amber-500/20 text-amber-400"
-                          }`}
-                        >
-                          {new Date() >=
-                          new Date(Number(info[2]) + Number(info[3]))
-                            ? "✅ Ready to withdraw"
-                            : "⏳ Locked"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </>
         )}
       </div>
     </div>
