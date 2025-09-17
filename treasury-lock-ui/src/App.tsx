@@ -300,11 +300,11 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
+    <div className="min-h-screen bg-blue-1000 to-slate-900 p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8 pt-8">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
+          <h1 className="text-5xl font-bold bg-blue-400  bg-clip-text text-transparent mb-4">
             Treasury Lock
           </h1>
         </div>
