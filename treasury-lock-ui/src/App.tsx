@@ -304,7 +304,7 @@ export default function App() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8 pt-8">
-          <h1 className="text-5xl font-bold bg-blue-400  bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl font-bold text-white bg-clip-text text-transparent mb-4">
             Treasury Lock
           </h1>
         </div>
@@ -313,14 +313,14 @@ export default function App() {
         <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 mb-8 border border-slate-700/50 shadow-2xl">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-xl font-semibold text-white mb-2">
+              <h3 className="font-semibold text-white mb-2">
                 Wallet Connection
               </h3>
               {currentAccount ? (
                 <p className="text-green-400 text-sm">✅ Wallet connected</p>
               ) : (
                 <p className="text-amber-400 text-sm">
-                  ⚠️ Please connect your wallet to continue
+                  ⚠️ Connect your wallet to continue
                 </p>
               )}
             </div>
