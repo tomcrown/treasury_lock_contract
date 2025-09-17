@@ -324,7 +324,9 @@ export default function App() {
                 </p>
               )}
             </div>
-            <ConnectButton />
+            <div className="scale-90">
+              <ConnectButton />
+            </div>
           </div>
         </div>
 
