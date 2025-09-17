@@ -8,7 +8,8 @@ import { Transaction } from "@mysten/sui/transactions";
 import { SuiClient, getFullnodeUrl } from "@mysten/sui/client";
 
 // Constants for Move contract components
-const PACKAGE_ID = "0x1c48c1769a145b5c0b79f2f7f7668a6c2bf1161df7bb0a7548ce968bd4c9a76a";
+const PACKAGE_ID =
+  "0x1c48c1769a145b5c0b79f2f7f7668a6c2bf1161df7bb0a7548ce968bd4c9a76a";
 const MODULE_NAME = "lock";
 const CLOCK_OBJECT_ID = "0x6";
 
@@ -17,7 +18,8 @@ const client = new SuiClient({ url: getFullnodeUrl("testnet") });
 
 export default function App() {
   const currentAccount = useCurrentAccount();
-  const { mutateAsync: signAndExecuteTransaction } = useSignAndExecuteTransaction();
+  const { mutateAsync: signAndExecuteTransaction } =
+    useSignAndExecuteTransaction();
 
   const [duration, setDuration] = useState(5);
   const [lockerId, setLockerId] = useState("");
@@ -32,7 +34,8 @@ export default function App() {
   const [customAmountInput, setCustomAmountInput] = useState("");
   const [customDuration, setCustomDuration] = useState(5);
   const customAmount = parseFloat(customAmountInput);
-  const isCustomLendDisabled = !currentAccount || !coinType || !customAmount || customAmount <= 0;
+  const isCustomLendDisabled =
+    !currentAccount || !coinType || !customAmount || customAmount <= 0;
 
   // Sends a transaction to lock (lend) SUI tokens
   async function lend() {
@@ -56,35 +59,37 @@ export default function App() {
         arguments: [coin, tx.pure.u64(duration), tx.object(CLOCK_OBJECT_ID)],
       });
 
-      const result = await signAndExecuteTransaction({
+      const result = (await signAndExecuteTransaction({
         transaction: tx,
-      }) as any;
+      })) as any;
 
       console.log("Lend result:", result);
 
       const digest = result?.digest || result?.effects?.transactionDigest;
-      const txBlock = await client.getTransactionBlock({
+      const txBlock = (await client.getTransactionBlock({
         digest,
         options: { showObjectChanges: true },
-      }) as any;
+      })) as any;
 
-      const createdObjects = txBlock.objectChanges?.filter((c: any) => c.type === "created");
+      const createdObjects = txBlock.objectChanges?.filter(
+        (c: any) => c.type === "created"
+      );
       const lockerObj = createdObjects?.find((c: any) =>
         c.objectType.includes("Locker<0x2::sui::SUI>")
       );
 
       if (lockerObj) {
         setLockerId(lockerObj.objectId);
-        alert(`Lend successful! Locker ID: ${lockerObj.objectId}`);
+        alert(`Lock successful! Locker ID: ${lockerObj.objectId}`);
       } else {
-        alert("Lend successful, but no Locker object was found.");
+        alert("Lock successful, but no Locker object was found.");
       }
 
       setAmountInput("");
       setDuration(5);
     } catch (error) {
-      console.error("Lend failed:", error);
-      alert("Lend failed.");
+      console.error("Lock failed:", error);
+      alert("Lock failed.");
     }
   }
 
@@ -106,36 +111,47 @@ export default function App() {
         return;
       }
 
-      const coinObj = coins.data.find(c => BigInt(c.balance) >= BigInt(customAmount * 1_000_000_000));
+      const coinObj = coins.data.find(
+        (c) => BigInt(c.balance) >= BigInt(customAmount * 1_000_000_000)
+      );
       if (!coinObj) {
-        alert(`No single coin object has enough balance for ${customAmount} units.`);
+        alert(
+          `No single coin object has enough balance for ${customAmount} units.`
+        );
         return;
       }
 
       const tx = new Transaction();
       tx.setGasBudget(100000000);
 
-      const [splitCoin] = tx.splitCoins(
-        tx.object(coinObj.coinObjectId),
-        [tx.pure.u64(BigInt(customAmount * 1_000_000_000))]
-      );
+      const [splitCoin] = tx.splitCoins(tx.object(coinObj.coinObjectId), [
+        tx.pure.u64(BigInt(customAmount * 1_000_000_000)),
+      ]);
 
       tx.moveCall({
         target: `${PACKAGE_ID}::${MODULE_NAME}::lend`,
         typeArguments: [coinType],
-        arguments: [splitCoin, tx.pure.u64(customDuration), tx.object(CLOCK_OBJECT_ID)],
+        arguments: [
+          splitCoin,
+          tx.pure.u64(customDuration),
+          tx.object(CLOCK_OBJECT_ID),
+        ],
       });
 
-      const result = await signAndExecuteTransaction({ transaction: tx }) as any;
+      const result = (await signAndExecuteTransaction({
+        transaction: tx,
+      })) as any;
       console.log("Custom lend result:", result);
 
       const digest = result?.digest || result?.effects?.transactionDigest;
-      const txBlock = await client.getTransactionBlock({
+      const txBlock = (await client.getTransactionBlock({
         digest,
         options: { showObjectChanges: true },
-      }) as any;
+      })) as any;
 
-      const createdObjects = txBlock.objectChanges?.filter((c: any) => c.type === "created");
+      const createdObjects = txBlock.objectChanges?.filter(
+        (c: any) => c.type === "created"
+      );
       const lockerObj = createdObjects?.find((c: any) =>
         c.objectType.includes(`Locker<${coinType}>`)
       );
@@ -170,7 +186,9 @@ export default function App() {
         arguments: [tx.object(lockerId), tx.object(CLOCK_OBJECT_ID)],
       });
 
-      const result = await signAndExecuteTransaction({ transaction: tx }) as any;
+      const result = (await signAndExecuteTransaction({
+        transaction: tx,
+      })) as any;
       console.log("Withdraw result:", result);
 
       const status = result?.effects?.status?.status;
@@ -179,26 +197,29 @@ export default function App() {
       if (status === "failure") {
         console.error("Withdraw failed:", errorMessage);
         if (errorMessage?.toLowerCase().includes("code 2")) {
-          alert("Error: It’s too early to withdraw. Please wait until the lock duration ends.");
+          alert(
+            "Error: It's too early to withdraw. Please wait until the lock duration ends."
+          );
         } else {
           alert(`Withdraw failed: ${errorMessage}`);
         }
         return;
       }
 
-      alert("Withdraw successful!")
+      alert("Withdraw successful!");
       setLockerId("");
     } catch (error: any) {
       console.error("Withdraw failed:", error);
       const serialized = error?.toString() || "";
       if (serialized.includes("code 2")) {
-        alert("Error: It’s too early to withdraw. Please wait until the lock duration ends.");
+        alert(
+          "Error: It's too early to withdraw. Please wait until the lock duration ends."
+        );
       } else {
         alert("Withdraw failed.");
       }
     }
   }
-
 
   // Withdraw a locked loan (Custom type)
   async function withdrawCustomLoan() {
@@ -215,7 +236,9 @@ export default function App() {
         arguments: [tx.object(lockerId), tx.object(CLOCK_OBJECT_ID)],
       });
 
-      const result = await signAndExecuteTransaction({ transaction: tx }) as any;
+      const result = (await signAndExecuteTransaction({
+        transaction: tx,
+      })) as any;
       console.log("Withdraw result:", result);
 
       const status = result?.effects?.status?.status;
@@ -224,20 +247,24 @@ export default function App() {
       if (status === "failure") {
         console.error("Withdraw failed:", errorMessage);
         if (errorMessage?.toLowerCase().includes("code 2")) {
-          alert("Error: It’s too early to withdraw. Please wait until the lock duration ends.");
+          alert(
+            "Error: It's too early to withdraw. Please wait until the lock duration ends."
+          );
         } else {
           alert(`Withdraw failed: ${errorMessage}`);
         }
         return;
       }
 
-      alert("Withdraw successful!")
+      alert("Withdraw successful!");
       setLockerId("");
     } catch (error: any) {
       console.error("Withdraw failed:", error);
       const serialized = error?.toString() || "";
       if (serialized.includes("code 2")) {
-        alert("Error: It’s too early to withdraw. Please wait until the lock duration ends.");
+        alert(
+          "Error: It's too early to withdraw. Please wait until the lock duration ends."
+        );
       } else {
         alert("Withdraw failed.");
       }
@@ -273,156 +300,297 @@ export default function App() {
   }
 
   return (
-    <div className="mt-20 bg-gradient-to-r from-black via-gray-900 to-black text-white p-6 max-w-3xl mx-auto rounded shadow-xl">
-      <h1 className="text-2xl font-bold mb-6 text-center">Treasury Lock</h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8 pt-8">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
+            Treasury Lock
+          </h1>
+        </div>
 
-      <div className="mb-4">
-        <ConnectButton />
-        {!currentAccount && <p className="text-sm text-gray-400 mt-2">Please connect your wallet</p>}
-      </div>
-
-      {currentAccount && (
-        <>
-          {/* SUI lending section */}
-          <div className="mb-6">
-            <label className="block mb-1 font-medium">Amount (SUI):</label>
-            <input
-              type="text"
-              value={amountInput}
-              onChange={(e) => setAmountInput(e.target.value)}
-              className="border border-gray-600 bg-gray-800 text-white rounded p-2 w-full"
-              placeholder="e.g. 1.5"
-            />
-
-            <label className="block mt-4 mb-1 font-medium">Duration (minutes):</label>
-            <input
-              type="number"
-              value={duration}
-              onChange={(e) => setDuration(parseInt(e.target.value))}
-              className="border border-gray-600 bg-gray-800 text-white rounded p-2 w-full"
-            />
-
-            <button
-              onClick={lend}
-              disabled={isLendDisabled}
-              className={`mt-4 ${isLendDisabled ? "bg-gray-500 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-                } text-white px-4 py-2 rounded w-full`}
-            >
-              Lend SUI
-            </button>
+        {/* Connect Wallet Card */}
+        <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 mb-8 border border-slate-700/50 shadow-2xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-xl font-semibold text-white mb-2">
+                Wallet Connection
+              </h3>
+              {currentAccount ? (
+                <p className="text-green-400 text-sm">✅ Wallet connected</p>
+              ) : (
+                <p className="text-amber-400 text-sm">
+                  ⚠️ Please connect your wallet to continue
+                </p>
+              )}
+            </div>
+            <ConnectButton />
           </div>
+        </div>
 
-          {/* Custom coin lending section */}
-          <div className="mb-6 mt-10 border-t border-gray-700 pt-6">
-            <h2 className="text-lg font-semibold mb-4">Lend Custom Coin</h2>
+        {currentAccount && (
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* SUI Lending Section */}
+            <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
+              <div className="flex items-center mb-6">
+                <h2 className="text-2xl font-bold text-white">Lock SUI</h2>
+              </div>
 
-            <label className="block mb-1 font-medium">Coin Type:</label>
-            <input
-              type="text"
-              value={coinType}
-              onChange={(e) => setCoinType(e.target.value)}
-              className="border border-gray-600 bg-gray-800 text-white rounded p-2 w-full"
-              placeholder="e.g. 0xYourPackage::yourcoin::YOURCOIN"
-            />
-
-            <label className="block mt-4 mb-1 font-medium">Amount:</label>
-            <input
-              type="text"
-              value={customAmountInput}
-              onChange={(e) => setCustomAmountInput(e.target.value)}
-              className="border border-gray-600 bg-gray-800 text-white rounded p-2 w-full"
-              placeholder="e.g. 50"
-            />
-
-            <label className="block mt-4 mb-1 font-medium">Duration (minutes):</label>
-            <input
-              type="number"
-              value={customDuration}
-              onChange={(e) => setCustomDuration(parseInt(e.target.value))}
-              className="border border-gray-600 bg-gray-800 text-white rounded p-2 w-full"
-            />
-
-            <button
-              onClick={lendCustomCoin}
-              disabled={isCustomLendDisabled}
-              className={`mt-4 ${isCustomLendDisabled
-                ? "bg-gray-500 cursor-not-allowed"
-                : "bg-yellow-600 hover:bg-yellow-700"
-                } text-white px-4 py-2 rounded w-full`}
-            >
-              Lend Custom Coin
-            </button>
-          </div>
-
-          {/* Locker actions */}
-          <div className="mb-6">
-            <label className="block mb-1 font-medium">Locker Object ID:</label>
-            <input
-              type="text"
-              value={lockerId}
-              onChange={(e) => setLockerId(e.target.value)}
-              className="border border-gray-600 bg-gray-800 text-white rounded p-2 w-full"
-              placeholder="Enter Locker Object ID"
-            />
-
-            <button
-              onClick={withdrawLoan}
-              // Enabled only if lockerId exists AND coinType is empty (SUI lending)
-              disabled={lockerId.trim() === "" || coinType.trim() !== ""}
-              className={`mt-4 ${lockerId.trim() === "" || coinType.trim() !== ""
-                ? "bg-gray-500 cursor-not-allowed"
-                : "bg-purple-600 hover:bg-purple-700"
-                } text-white px-4 py-2 rounded w-full`}
-            >
-              Withdraw Loan
-            </button>
-
-            <button
-              onClick={withdrawCustomLoan}
-              // Enabled only if lockerId exists AND coinType is set (custom coin lending)
-              disabled={lockerId.trim() === "" || coinType.trim() === ""}
-              className={`mt-4 ${lockerId.trim() === "" || coinType.trim() === ""
-                ? "bg-gray-500 cursor-not-allowed"
-                : "bg-red-600 hover:bg-red-700"
-                } text-white px-4 py-2 rounded w-full`}
-            >
-              Withdraw Custom Loan
-            </button>
-
-
-            <button
-              onClick={getLockerInfo}
-              disabled={lockerId.trim() === ""}
-              className={`mt-2 ${lockerId.trim() === ""
-                ? "bg-gray-500 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700"
-                } text-white px-4 py-2 rounded w-full`}
-            >
-              Get Locker Info
-            </button>
-          </div>
-
-          {/* Locker info display */}
-          <div className="mb-6">
-            {info && (
-              <>
-                <h2 className="text-lg font-semibold mb-2">Locker Info</h2>
-                <div className="mt-4 bg-gray-800 p-4 rounded text-sm">
-                  <p><strong>Lender:</strong> {info[0]}</p>
-                  <p><strong>Amount (mist):</strong> {info[1]}</p>
-                  <p><strong>Start Time:</strong> {info[2]}</p>
-                  <p><strong>Start Date:</strong> {new Date(Number(info[2])).toLocaleString()}</p>
-                  <p><strong>Duration:</strong> {info[3]}</p>
-                  <p><strong>Estimated Release:</strong> {new Date(Number(info[2]) + Number(info[3])).toLocaleString()}</p>
-                  <p><strong>Status:</strong> <span className={new Date() >= new Date(Number(info[2]) + Number(info[3])) ? "text-green-400" : "text-yellow-400"}>
-                    {new Date() >= new Date(Number(info[2]) + Number(info[3])) ? "Ready to withdraw" : "Not ready yet"}
-                  </span></p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Amount (SUI)
+                  </label>
+                  <input
+                    type="text"
+                    value={amountInput}
+                    onChange={(e) => setAmountInput(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="e.g. 1.5"
+                  />
                 </div>
-              </>
-            )}
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Duration (minutes)
+                  </label>
+                  <input
+                    type="number"
+                    value={duration}
+                    onChange={(e) => setDuration(parseInt(e.target.value))}
+                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  />
+                </div>
+
+                <button
+                  onClick={lend}
+                  disabled={isLendDisabled}
+                  className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-200 ${
+                    isLendDisabled
+                      ? "bg-slate-600 text-slate-400 cursor-not-allowed"
+                      : "bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 transform hover:scale-[1.02] shadow-lg"
+                  }`}
+                >
+                  Lock SUI Tokens
+                </button>
+              </div>
+            </div>
+
+            {/* Custom Coin Lending Section */}
+            <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
+              <div className="flex items-center mb-6">
+                <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-white font-bold text-xs">TKN</span>
+                </div>
+                <h2 className="text-2xl font-bold text-white">
+                  Lock Custom Coin
+                </h2>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Coin Type
+                  </label>
+                  <input
+                    type="text"
+                    value={coinType}
+                    onChange={(e) => setCoinType(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                    placeholder="0xYourPackage::yourcoin::YOURCOIN"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Amount
+                  </label>
+                  <input
+                    type="text"
+                    value={customAmountInput}
+                    onChange={(e) => setCustomAmountInput(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                    placeholder="e.g. 50"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Duration (minutes)
+                  </label>
+                  <input
+                    type="number"
+                    value={customDuration}
+                    onChange={(e) =>
+                      setCustomDuration(parseInt(e.target.value))
+                    }
+                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                  />
+                </div>
+
+                <button
+                  onClick={lendCustomCoin}
+                  disabled={isCustomLendDisabled}
+                  className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-200 ${
+                    isCustomLendDisabled
+                      ? "bg-slate-600 text-slate-400 cursor-not-allowed"
+                      : "bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700 transform hover:scale-[1.02] shadow-lg"
+                  }`}
+                >
+                  Lock Custom Tokens
+                </button>
+              </div>
+            </div>
           </div>
-        </>
-      )}
+        )}
+
+        {currentAccount && (
+          <>
+            {/* Locker Management Section */}
+            <div className="mt-8 bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
+              <div className="flex items-center mb-6">
+                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-white font-bold text-sm">🔐</span>
+                </div>
+                <h2 className="text-2xl font-bold text-white">Manage Locker</h2>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Locker Object ID
+                  </label>
+                  <input
+                    type="text"
+                    value={lockerId}
+                    onChange={(e) => setLockerId(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    placeholder="Enter Locker Object ID"
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-4">
+                  <button
+                    onClick={withdrawLoan}
+                    disabled={lockerId.trim() === "" || coinType.trim() !== ""}
+                    className={`py-3 px-6 rounded-xl font-semibold transition-all duration-200 ${
+                      lockerId.trim() === "" || coinType.trim() !== ""
+                        ? "bg-slate-600 text-slate-400 cursor-not-allowed"
+                        : "bg-gradient-to-r from-purple-600 to-violet-600 text-white hover:from-purple-700 hover:to-violet-700 transform hover:scale-[1.02] shadow-lg"
+                    }`}
+                  >
+                    Withdraw SUI
+                  </button>
+
+                  <button
+                    onClick={withdrawCustomLoan}
+                    disabled={lockerId.trim() === "" || coinType.trim() === ""}
+                    className={`py-3 px-6 rounded-xl font-semibold transition-all duration-200 ${
+                      lockerId.trim() === "" || coinType.trim() === ""
+                        ? "bg-slate-600 text-slate-400 cursor-not-allowed"
+                        : "bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700 transform hover:scale-[1.02] shadow-lg"
+                    }`}
+                  >
+                    Withdraw Custom
+                  </button>
+
+                  <button
+                    onClick={getLockerInfo}
+                    disabled={lockerId.trim() === ""}
+                    className={`py-3 px-6 rounded-xl font-semibold transition-all duration-200 ${
+                      lockerId.trim() === ""
+                        ? "bg-slate-600 text-slate-400 cursor-not-allowed"
+                        : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 transform hover:scale-[1.02] shadow-lg"
+                    }`}
+                  >
+                    Get Info
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Locker Info Display */}
+            {info && (
+              <div className="mt-8 bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
+                <div className="flex items-center mb-6">
+                  <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white font-bold text-sm">ℹ️</span>
+                  </div>
+                  <h2 className="text-2xl font-bold text-white">
+                    Locker Information
+                  </h2>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="bg-slate-700/30 rounded-xl p-4">
+                      <label className="block text-sm font-medium text-slate-400 mb-1">
+                        Lender Address
+                      </label>
+                      <p className="text-white font-mono text-sm break-all">
+                        {info[0]}
+                      </p>
+                    </div>
+                    <div className="bg-slate-700/30 rounded-xl p-4">
+                      <label className="block text-sm font-medium text-slate-400 mb-1">
+                        Amount (mist)
+                      </label>
+                      <p className="text-white font-mono">{info[1]}</p>
+                    </div>
+                    <div className="bg-slate-700/30 rounded-xl p-4">
+                      <label className="block text-sm font-medium text-slate-400 mb-1">
+                        Duration
+                      </label>
+                      <p className="text-white">{info[3]} ms</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="bg-slate-700/30 rounded-xl p-4">
+                      <label className="block text-sm font-medium text-slate-400 mb-1">
+                        Start Time
+                      </label>
+                      <p className="text-white">
+                        {new Date(Number(info[2])).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="bg-slate-700/30 rounded-xl p-4">
+                      <label className="block text-sm font-medium text-slate-400 mb-1">
+                        Estimated Release
+                      </label>
+                      <p className="text-white">
+                        {new Date(
+                          Number(info[2]) + Number(info[3])
+                        ).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="bg-slate-700/30 rounded-xl p-4">
+                      <label className="block text-sm font-medium text-slate-400 mb-1">
+                        Status
+                      </label>
+                      <div className="flex items-center">
+                        <span
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                            new Date() >=
+                            new Date(Number(info[2]) + Number(info[3]))
+                              ? "bg-green-500/20 text-green-400"
+                              : "bg-amber-500/20 text-amber-400"
+                          }`}
+                        >
+                          {new Date() >=
+                          new Date(Number(info[2]) + Number(info[3]))
+                            ? "✅ Ready to withdraw"
+                            : "⏳ Locked"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
