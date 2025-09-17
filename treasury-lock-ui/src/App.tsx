@@ -379,9 +379,6 @@ export default function App() {
             {/* Custom Coin Lending Section */}
             <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
               <div className="flex items-center mb-6">
-                <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center mr-3">
-                  <span className="text-white font-bold text-xs">TKN</span>
-                </div>
                 <h2 className="text-2xl font-bold text-white">
                   Lock Custom Coin
                 </h2>
@@ -449,9 +446,6 @@ export default function App() {
             {/* Locker Management Section */}
             <div className="mt-8 bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
               <div className="flex items-center mb-6">
-                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
-                  <span className="text-white font-bold text-sm">🔐</span>
-                </div>
                 <h2 className="text-2xl font-bold text-white">Manage Locker</h2>
               </div>
 
